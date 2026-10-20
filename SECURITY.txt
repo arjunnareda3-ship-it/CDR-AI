@@ -1,0 +1,51 @@
+===============================================
+  SHADOW CDR — Security Features & Notes
+  Student: Arjun Singh | BCA Cyber Security
+===============================================
+
+IMPLEMENTED SECURITY CONTROLS
+-----------------------------
+1. Session timeout (2 hours) — auto logout
+2. Login lockout — 5 failed attempts → 2 min lock
+3. Username sanitization (alphanumeric only)
+4. XSS protection — HTML escaping on all table output
+5. Input sanitization on Add Record / Add User
+6. Admin-only Admin Panel (role check + hidden tab)
+7. Protected admin account (arjun cannot be deleted)
+8. Client-side role stored after login
+
+FIREBASE (IMPORTANT)
+--------------------
+API key in frontend is NORMAL for Firebase.
+Real protection = Firestore Security Rules.
+
+Recommended production rules:
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /{document=**} {
+        allow read, write: if false;  // lock down
+        // OR use Firebase Auth:
+        // allow read, write: if request.auth != null;
+      }
+    }
+  }
+
+For college demo, test mode (allow true) is OK
+but mention in viva that production needs strict rules.
+
+REMAINING LIMITATIONS (be honest in viva)
+-----------------------------------------
+- Passwords stored in browser localStorage (not server hash)
+- Login can still be bypassed by advanced users via DevTools
+  (true fix = Firebase Authentication)
+- No HTTPS enforcement on local file open (Vercel gives HTTPS)
+
+VIVA ONE-LINER
+--------------
+"We added session timeout, brute-force lockout, XSS escaping,
+input sanitization and role-based admin access. SQL injection
+does not apply because we use Firebase NoSQL. For production
+we would enable Firebase Auth and strict Firestore rules."
+
+===============================================

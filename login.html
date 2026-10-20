@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHADOW CDR // Access Terminal</title>
+    <link rel="stylesheet" href="style.css?v=login-terminal-motion-2">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            isolation: isolate;
+            background:
+                radial-gradient(ellipse at 50% 42%, rgba(0, 65, 20, 0.2), transparent 46%),
+                radial-gradient(ellipse at 8% 12%, rgba(0, 255, 65, 0.07), transparent 28%),
+                #050505;
+        }
+
+        body {
+            background-size: 100% 100%, 100% 100%, 100% 100%;
+            animation: backgroundBreathe 9s ease-in-out infinite alternate;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            inset: -50%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        body::before {
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 255, 65, 0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.045) 1px, transparent 1px),
+                radial-gradient(circle, rgba(0, 255, 65, 0.48) 1px, transparent 1.8px);
+            background-size: 44px 44px, 44px 44px, 73px 73px;
+            mask-image: radial-gradient(ellipse at center, #000 12%, transparent 78%);
+            animation: gridDrift 24s linear infinite;
+        }
+
+        body::after {
+            inset: auto;
+            width: 34vw;
+            height: 34vw;
+            min-width: 260px;
+            min-height: 260px;
+            left: 50%;
+            top: 50%;
+            border-radius: 50%;
+            background: rgba(0, 255, 65, 0.1);
+            filter: blur(95px);
+            transform: translate(-50%, -50%);
+            animation: ambientPulse 6s ease-in-out infinite;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            perspective: 1000px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(26px) rotateX(5deg) scale(0.97);
+        }
+
+        .login-container:not(.is-revealed) *,
+        .login-container:not(.is-revealed) .login-box::before,
+        .login-container:not(.is-revealed) .login-box::after {
+            animation-play-state: paused;
+        }
+
+        body.intro-complete .login-container {
+            visibility: visible;
+            animation: loginEntrance 0.9s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+        }
+
+        .welcome-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at center, rgba(0, 75, 22, 0.28), transparent 55%),
+                rgba(3, 5, 3, 0.97);
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+        }
+
+        .welcome-screen::before,
+        .welcome-screen::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: min(74vw, 640px);
+            aspect-ratio: 1;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.08), inset 0 0 55px rgba(0, 255, 65, 0.04);
+            transform: translate(-50%, -50%) scale(0.45);
+            animation: welcomeRing 3.8s ease-out both;
+            pointer-events: none;
+        }
+
+        .welcome-screen::after {
+            width: min(58vw, 500px);
+            animation-delay: 0.42s;
+            animation-duration: 3.55s;
+        }
+
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            padding: 24px;
+            text-align: center;
+            animation: welcomeContent 0.85s cubic-bezier(0.18, 0.75, 0.25, 1) both;
+        }
+
+        .welcome-kicker {
+            margin-bottom: 18px;
+            color: #00aa33;
+            font-size: 12px;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            animation: contentReveal 0.65s 0.12s both;
+        }
+
+        .welcome-title {
+            position: relative;
+            display: inline-block;
+            color: #d8ffe0;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(34px, 8vw, 82px);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            line-height: 1.2;
+            text-shadow:
+                0 0 8px #00ff41,
+                0 0 24px rgba(0, 255, 65, 0.9),
+                0 0 68px rgba(0, 255, 65, 0.55);
+            animation: welcomeGlow 1.5s ease-in-out infinite alternate, welcomeJitter 4s 1.2s steps(1, end) infinite;
+        }
+
+        .welcome-title::before,
+        .welcome-title::after {
+            content: attr(data-text);
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            opacity: 0.72;
+            pointer-events: none;
+        }
+
+        .welcome-title::before {
+            color: #00ff41;
+            text-shadow: -3px 0 #00ff41;
+            clip-path: inset(0 0 62% 0);
+            animation: glitchTop 2.7s infinite linear alternate-reverse;
+        }
+
+        .welcome-title::after {
+            color: #68ff9b;
+            text-shadow: 3px 0 #007f2b;
+            clip-path: inset(62% 0 0 0);
+            animation: glitchBottom 2.1s infinite linear alternate-reverse;
+        }
+
+        .welcome-rule {
+            width: min(360px, 66vw);
+            height: 1px;
+            margin: 24px auto 16px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            box-shadow: 0 0 14px rgba(0, 255, 65, 0.9);
+            transform-origin: center;
+            animation: ruleExpand 0.9s 0.5s both;
+        }
+
+        .welcome-caption {
+            color: #00aa33;
+            font-size: 12px;
+            letter-spacing: 0.3em;
+            animation: captionBlink 1.4s ease-in-out infinite;
+        }
+
+        .welcome-skip {
+            position: absolute;
+            right: max(24px, env(safe-area-inset-right));
+            bottom: max(24px, env(safe-area-inset-bottom));
+            border: 1px solid rgba(0, 255, 65, 0.45);
+            padding: 10px 16px;
+            background: rgba(0, 20, 5, 0.7);
+            color: #00ff41;
+            font: inherit;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .welcome-skip:hover,
+        .welcome-skip:focus-visible {
+            background: rgba(0, 255, 65, 0.14);
+            box-shadow: 0 0 18px rgba(0, 255, 65, 0.28);
+            transform: translateY(-2px);
+        }
+
+        .welcome-screen.is-leaving {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .welcome-screen.is-leaving .welcome-content {
+            animation: welcomeExit 0.55s ease both;
+        }
+
+        .login-box {
+            background: #0a0a0a;
+            border: 1px solid #00ff4133;
+            padding: 40px 35px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.08), 0 20px 80px rgba(0, 0, 0, 0.6);
+            transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+        }
+
+        .login-ambience,
+        .login-corners {
+            position: absolute !important;
+            inset: 0;
+            z-index: 0 !important;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .login-ambience i {
+            position: absolute;
+            left: var(--particle-x);
+            bottom: -8px;
+            width: var(--particle-size, 3px);
+            height: var(--particle-size, 3px);
+            border-radius: 50%;
+            background: #9bffad;
+            box-shadow: 0 0 8px 2px rgba(0, 255, 65, 0.66);
+            opacity: 0;
+            animation: particleRise var(--particle-duration, 6s) var(--particle-delay, 0s) linear infinite;
+        }
+
+        .login-corners {
+            inset: 9px;
+            background:
+                linear-gradient(#00ff41, #00ff41) left top / 26px 1px no-repeat,
+                linear-gradient(#00ff41, #00ff41) left top / 1px 26px no-repeat,
+                linear-gradient(#00ff41, #00ff41) right top / 26px 1px no-repeat,
+                linear-gradient(#00ff41, #00ff41) right top / 1px 26px no-repeat,
+                linear-gradient(#00ff41, #00ff41) left bottom / 26px 1px no-repeat,
+                linear-gradient(#00ff41, #00ff41) left bottom / 1px 26px no-repeat,
+                linear-gradient(#00ff41, #00ff41) right bottom / 26px 1px no-repeat,
+                linear-gradient(#00ff41, #00ff41) right bottom / 1px 26px no-repeat;
+            opacity: 0.38;
+            animation: cornerSignal 3.2s ease-in-out infinite;
+        }
+
+        .login-box > :not(.login-scan-beam) {
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-box > .login-ambience,
+        .login-box > .login-corners {
+            position: absolute;
+        }
+
+        .login-scan-beam {
+            position: absolute;
+            z-index: 0;
+            top: -35%;
+            left: 0;
+            width: 100%;
+            height: 22%;
+            background: linear-gradient(
+                180deg,
+                transparent,
+                rgba(0, 255, 65, 0.025) 35%,
+                rgba(0, 255, 65, 0.12) 50%,
+                rgba(0, 255, 65, 0.025) 65%,
+                transparent
+            );
+            pointer-events: none;
+        }
+
+        body.intro-complete .login-container.is-revealed .login-box {
+            animation: panelGlitch 6s 1.1s infinite;
+        }
+
+        body.intro-complete .login-container.is-revealed .login-scan-beam {
+            animation: loginScan 5.5s 0.4s ease-in-out infinite;
+        }
+
+        .login-box:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0, 255, 65, 0.5);
+            box-shadow: 0 0 55px rgba(0, 255, 65, 0.13), 0 24px 90px rgba(0, 0, 0, 0.65);
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            background-size: 200% 100%;
+            animation: beamSweep 2.2s ease-in-out infinite, beamTravel 5s linear infinite, borderSpark 4s linear infinite;
+        }
+
+        .login-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -70%;
+            width: 45%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.035), transparent);
+            transform: skewX(-18deg);
+            pointer-events: none;
+            animation: panelSweep 7s 1.2s ease-in-out infinite;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+            animation: contentReveal 0.65s 0.12s both;
+        }
+
+        .login-emblem-wrap {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 104px;
+            height: 104px;
+            margin: 0 auto 14px;
+            animation: emblemFloat 3.8s ease-in-out infinite;
+        }
+
+        .login-emblem-wrap::before,
+        .login-emblem-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            border: 1px solid rgba(0, 255, 65, 0.48);
+            clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+            filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.8));
+            animation: emblemRing 8s linear infinite;
+        }
+
+        .login-emblem-wrap::after {
+            inset: 0;
+            border-color: rgba(116, 255, 145, 0.35);
+            transform: rotate(30deg) scale(0.83);
+            animation: emblemRingReverse 12s linear infinite;
+        }
+
+        .emblem-orbit {
+            position: absolute;
+            z-index: 2;
+            inset: 0;
+            pointer-events: none;
+            animation: emblemOrbit 4s linear infinite;
+        }
+
+        .emblem-orbit::before {
+            content: '';
+            position: absolute;
+            top: 7px;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #d9ffe0;
+            box-shadow: 0 0 6px 2px #00ff41, 0 0 13px #00ff41;
+        }
+
+        .emblem-orbit-secondary {
+            inset: 10px;
+            animation-duration: 6s;
+            animation-direction: reverse;
+        }
+
+        .emblem-orbit-secondary::before {
+            top: auto;
+            bottom: 2px;
+            width: 3px;
+            height: 3px;
+            background: #00ff41;
+        }
+
+        .login-emblem {
+            position: relative;
+            z-index: 1;
+            display: block;
+            width: 78px;
+            height: 78px;
+            color: #00ff41;
+            filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.95))
+                    drop-shadow(0 0 18px rgba(0, 255, 65, 0.62));
+            animation: emblemPulse 2.4s ease-in-out infinite;
+        }
+
+        .login-emblem .emblem-fill {
+            fill: rgba(0, 70, 18, 0.46);
+        }
+
+        .login-emblem .emblem-cutout {
+            fill: #00ff41;
+            filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.95));
+        }
+
+        .login-emblem .emblem-detail {
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: square;
+            stroke-linejoin: bevel;
+            stroke-width: 2;
+        }
+
+        .login-emblem .emblem-inner-ring {
+            fill: none;
+            stroke: rgba(166, 255, 185, 0.8);
+            stroke-width: 1;
+            stroke-dasharray: 2 5;
+            transform-origin: center;
+            animation: emblemDash 5s linear infinite;
+        }
+
+        .login-emblem .emblem-scan {
+            fill: #c9ffd4;
+            opacity: 0;
+            filter: drop-shadow(0 0 4px #00ff41);
+            animation: emblemScan 2.8s ease-in-out infinite;
+        }
+
+        @keyframes emblemPulse {
+            0%, 100% { opacity: 0.82; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1.06); }
+        }
+
+        @keyframes emblemFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes emblemRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes emblemRingReverse {
+            from { transform: rotate(30deg) scale(0.83); }
+            to { transform: rotate(-330deg) scale(0.83); }
+        }
+
+        @keyframes emblemOrbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes emblemDash {
+            to { stroke-dashoffset: 28; transform: rotate(360deg); }
+        }
+
+        @keyframes emblemScan {
+            0%, 8% { opacity: 0; transform: translateY(-22px); }
+            18%, 78% { opacity: 0.85; }
+            90%, 100% { opacity: 0; transform: translateY(30px); }
+        }
+
+        .login-logo {
+            position: relative;
+            display: inline-block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: #00ff41;
+            text-shadow: 0 0 15px #00ff41, 0 0 30px #00cc33;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        .login-logo::before,
+        .login-logo::after {
+            content: attr(data-text);
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-logo::before {
+            color: #baffc8;
+            text-shadow: -2px 0 #00ff41;
+            clip-path: inset(10% 0 62% 0);
+            animation: loginGlitchTop 4.8s 1s steps(1, end) infinite;
+        }
+
+        .login-logo::after {
+            color: #00ff41;
+            text-shadow: 2px 0 #006b24;
+            clip-path: inset(62% 0 10% 0);
+            animation: loginGlitchBottom 5.4s 1.6s steps(1, end) infinite;
+        }
+
+        .login-sub {
+            font-size: 12px;
+            color: #00aa33;
+            letter-spacing: 2px;
+            animation: subSignal 3.6s ease-in-out infinite;
+        }
+
+        .access-text {
+            text-align: center;
+            font-size: 13px;
+            color: #008822;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            position: relative;
+            font-size: 11px;
+            color: #00aa33;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+        }
+
+        .form-group label::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -3px;
+            width: 34px;
+            height: 1px;
+            background: #00ff41;
+            box-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.25s ease;
+        }
+
+        .form-group:focus-within label {
+            color: #00ff41;
+            text-shadow: 0 0 9px rgba(0, 255, 65, 0.55);
+        }
+
+        .form-group:focus-within label::after {
+            transform: scaleX(1);
+        }
+
+        .form-group input {
+            width: 100%;
+            background: #050505;
+            border: 1px solid #00ff4133;
+            color: #00ff41;
+            padding: 12px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+            animation: inputIdlePulse 3.8s ease-in-out infinite;
+        }
+
+        .form-group input:focus {
+            border-color: #00ff41;
+            background: #061009;
+            box-shadow: 0 0 18px rgba(0, 255, 65, 0.42), inset 0 0 18px rgba(0, 255, 65, 0.09);
+            transform: translateX(3px) scale(1.01);
+            animation: inputFocusPulse 1.8s ease-in-out infinite;
+        }
+
+        .form-group input:focus-visible {
+            outline: 1px solid rgba(0, 255, 65, 0.65);
+            outline-offset: 3px;
+        }
+
+        .form-group:hover input:not(:focus) {
+            border-color: rgba(0, 255, 65, 0.62);
+            box-shadow: 0 0 12px rgba(0, 255, 65, 0.16);
+        }
+
+        .form-group input:-webkit-autofill,
+        .form-group input:-webkit-autofill:hover,
+        .form-group input:-webkit-autofill:focus {
+            -webkit-text-fill-color: #00ff41;
+            box-shadow: 0 0 0 1000px #050505 inset, 0 0 15px rgba(0, 255, 65, 0.2);
+            transition: background-color 9999s ease-out;
+        }
+
+        .form-group input::placeholder {
+            color: #003311;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 13px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.25s;
+        }
+
+        .login-btn:hover {
+            background: #00ff41;
+            color: #000;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+        }
+
+        .error-msg {
+            position: relative;
+            overflow: hidden;
+            display: none;
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid #ff3333;
+            color: #ff3333;
+            padding: 12px 42px 12px 15px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 0.06em;
+        }
+
+        .error-msg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            transform: translateX(-120%);
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        .error-msg.wrong {
+            background: rgba(255, 51, 51, 0.12);
+            border-color: #ff3333;
+            color: #ff5c5c;
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.65);
+            animation: errorWrong 0.48s ease both, wrongPulse 0.8s 0.48s ease-in-out 3;
+        }
+
+        .error-msg.wrong::before {
+            background: linear-gradient(100deg, transparent, rgba(255, 65, 65, 0.24), transparent);
+            animation: statusScan 0.72s ease-out both;
+        }
+
+        .error-msg.wrong::after,
+        .error-msg.verified::after {
+            position: absolute;
+            top: 50%;
+            right: 14px;
+            width: 20px;
+            height: 20px;
+            display: grid;
+            place-items: center;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .error-msg.wrong::after {
+            content: '×';
+            color: #ff5c5c;
+            text-shadow: 0 0 12px #ff3333;
+            animation: wrongMark 0.48s cubic-bezier(0.18, 0.75, 0.25, 1) both;
+        }
+
+        .error-msg.verified {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: #00ff41;
+            color: #aaffb9;
+            text-shadow: 0 0 12px rgba(0, 255, 65, 0.75);
+            animation: verifiedEntry 0.65s cubic-bezier(0.18, 0.75, 0.25, 1) both,
+                       verifiedPulse 0.78s 0.65s ease-in-out 3;
+        }
+
+        .error-msg.verified::before {
+            background: linear-gradient(100deg, transparent, rgba(170, 255, 185, 0.36), transparent);
+            animation: statusScan 0.9s ease-out both;
+        }
+
+        .error-msg.verified::after {
+            content: '✓';
+            color: #aaffb9;
+            text-shadow: 0 0 14px #00ff41;
+            animation: verifiedMark 0.55s 0.12s cubic-bezier(0.18, 0.75, 0.25, 1) both;
+        }
+
+        .login-box.is-verified {
+            border-color: #00ff41;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.28), 0 0 80px rgba(0, 255, 65, 0.14);
+            animation: verifiedFrame 1.2s ease-in-out both !important;
+        }
+
+        .login-box.is-verified #loginForm .form-group {
+            animation: verifiedInput 0.6s ease both;
+        }
+
+        .login-box.is-verified #loginForm .form-group:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .login-box.is-verified #loginForm input {
+            border-color: #00ff41;
+            box-shadow: 0 0 16px rgba(0, 255, 65, 0.3), inset 0 0 12px rgba(0, 255, 65, 0.08);
+        }
+
+        .login-box.is-verified .login-emblem {
+            animation: verifiedEmblem 0.8s ease-in-out 2;
+        }
+
+        .login-box.is-wrong {
+            border-color: #ff3333;
+            box-shadow: 0 0 24px rgba(255, 51, 51, 0.22);
+            animation: errorWrong 0.48s ease both, wrongFrame 0.8s ease-in-out 3 !important;
+        }
+
+        .login-box.is-wrong #loginForm input {
+            border-color: rgba(255, 51, 51, 0.72);
+            animation: wrongInput 0.42s ease both;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 11px;
+            color: #005522;
+        }
+
+        .hint {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 11px;
+            color: #004422;
+        }
+
+        .terminal-line {
+            font-size: 12px;
+            color: #006622;
+            margin-bottom: 4px;
+            opacity: 0;
+            animation: typeIn 0.5s forwards;
+        }
+
+        .terminal-line:nth-child(1) { animation-delay: 0.2s; }
+        .terminal-line:nth-child(2) { animation-delay: 0.5s; }
+        .terminal-line:nth-child(3) { animation-delay: 0.8s; }
+
+        @keyframes typeIn {
+            to { opacity: 1; }
+        }
+
+        .boot-text {
+            margin-bottom: 25px;
+            border-left: 2px solid #003311;
+            padding-left: 12px;
+            animation: contentReveal 0.6s 0.22s both;
+            transition: border-color 0.25s ease, filter 0.25s ease;
+        }
+
+        body.intro-complete .login-container.is-revealed .boot-text {
+            animation: contentReveal 0.6s 0.22s both, bootSignal 3.8s 1.8s ease-in-out infinite;
+        }
+
+        .terminal-line {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 0;
+            color: #00882b;
+            opacity: 1;
+        }
+
+        .terminal-line:nth-child(1) {
+            animation:
+                terminalType 0.8s steps(42, end) 0.45s forwards,
+                terminalSignal 2.6s ease-in-out 1.35s infinite,
+                terminalDrift 3.4s ease-in-out 1.35s infinite;
+        }
+
+        .terminal-line:nth-child(2) {
+            animation:
+                terminalType 0.8s steps(42, end) 1.15s forwards,
+                terminalSignal 2.6s ease-in-out 2.05s infinite,
+                terminalDrift 3.4s ease-in-out 2.05s infinite;
+        }
+
+        .terminal-line:nth-child(3) {
+            animation:
+                terminalType 0.8s steps(42, end) 1.85s forwards,
+                terminalSignal 2.6s ease-in-out 2.75s infinite,
+                terminalDrift 3.4s ease-in-out 2.75s infinite;
+        }
+
+        .terminal-line:nth-child(3)::after {
+            content: '▌';
+            color: #00ff41;
+            animation: cursorBlink 0.8s steps(2, start) infinite;
+        }
+
+        .form-group {
+            animation: contentReveal 0.55s both;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.35s; }
+        .form-group:nth-child(2) { animation-delay: 0.48s; }
+
+        .login-btn {
+            position: relative;
+            overflow: hidden;
+            animation: contentReveal 0.55s 0.6s both, buttonPulse 2.6s 1.4s ease-in-out infinite;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, transparent 25%, rgba(0, 255, 65, 0.2) 50%, transparent 75%);
+            background-size: 220% 100%;
+            background-position: 100% 0;
+            transform: translateX(-120%);
+            transition: transform 0.55s ease;
+            animation: buttonSweep 5.5s 2s ease-in-out infinite;
+        }
+
+        .login-btn:hover::before {
+            transform: translateX(120%);
+        }
+
+        .login-btn:active {
+            transform: scale(0.985);
+        }
+
+        .login-footer {
+            animation: contentReveal 0.55s 0.72s both;
+        }
+
+        @keyframes gridDrift {
+            from { background-position: 0 0, 0 0, 0 0; }
+            to { background-position: 44px 44px, 44px 44px, 73px 73px; }
+        }
+
+        @keyframes particleRise {
+            0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.5); }
+            12% { opacity: 0.8; }
+            78% { opacity: 0.55; }
+            100% { opacity: 0; transform: translate3d(var(--particle-drift, 18px), -360px, 0) scale(1.3); }
+        }
+
+        @keyframes cornerSignal {
+            0%, 100% { opacity: 0.24; filter: drop-shadow(0 0 0 #00ff41); }
+            50% { opacity: 0.72; filter: drop-shadow(0 0 5px #00ff41); }
+        }
+
+        @keyframes backgroundBreathe {
+            from { background-position: 50% 42%, 8% 12%, center; }
+            to { background-position: 54% 46%, 13% 18%, center; }
+        }
+
+        @keyframes ambientPulse {
+            0%, 100% { opacity: 0.42; transform: translate(-50%, -50%) scale(0.88); }
+            50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.12); }
+        }
+
+        @keyframes loginEntrance {
+            from { opacity: 0; transform: translateY(26px) rotateX(5deg) scale(0.97); filter: blur(5px); }
+            to { opacity: 1; transform: translateY(0) rotateX(0) scale(1); filter: blur(0); }
+        }
+
+        @keyframes contentReveal {
+            from { opacity: 0; transform: translateY(11px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes beamSweep {
+            0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 2px #00ff41); }
+            50% { opacity: 1; filter: drop-shadow(0 0 7px #00ff41); }
+        }
+
+        @keyframes beamTravel {
+            0%, 100% { transform: translateX(-28%); }
+            50% { transform: translateX(28%); }
+        }
+
+        @keyframes borderSpark {
+            from { background-position: 100% 0; }
+            to { background-position: -100% 0; }
+        }
+
+        @keyframes buttonSweep {
+            0%, 68% { background-position: 100% 0; }
+            88%, 100% { background-position: -100% 0; }
+        }
+
+        @keyframes panelSweep {
+            0%, 32% { left: -70%; }
+            68%, 100% { left: 130%; }
+        }
+
+        @keyframes logoGlow {
+            from { text-shadow: 0 0 10px rgba(0, 255, 65, 0.65), 0 0 24px rgba(0, 204, 51, 0.25); }
+            to { text-shadow: 0 0 18px rgba(0, 255, 65, 0.95), 0 0 38px rgba(0, 204, 51, 0.5); }
+        }
+
+        @keyframes terminalType {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes terminalSignal {
+            0%, 100% { color: #006622; text-shadow: 0 0 0 rgba(0, 255, 65, 0); }
+            50% { color: #00aa33; text-shadow: 0 0 7px rgba(0, 255, 65, 0.28); }
+        }
+
+        @keyframes terminalDrift {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(3px); }
+        }
+
+        @keyframes cursorBlink {
+            to { visibility: hidden; }
+        }
+
+        @keyframes inputIdlePulse {
+            0%, 100% { box-shadow: inset 0 0 0 rgba(0, 255, 65, 0); }
+            50% { box-shadow: inset 0 0 12px rgba(0, 255, 65, 0.035); }
+        }
+
+        @keyframes inputFocusPulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(0, 255, 65, 0.28), inset 0 0 12px rgba(0, 255, 65, 0.05); }
+            50% { box-shadow: 0 0 22px rgba(0, 255, 65, 0.52), inset 0 0 18px rgba(0, 255, 65, 0.12); }
+        }
+
+        @keyframes errorWrong {
+            0%, 100% { transform: translateX(0); }
+            18%, 54%, 82% { transform: translateX(-8px); }
+            36%, 70% { transform: translateX(8px); }
+        }
+
+        @keyframes wrongPulse {
+            0%, 100% { box-shadow: inset 0 0 0 rgba(255, 51, 51, 0); }
+            50% { box-shadow: inset 0 0 24px rgba(255, 51, 51, 0.2), 0 0 22px rgba(255, 51, 51, 0.38); }
+        }
+
+        @keyframes statusScan {
+            0% { transform: translateX(-120%); }
+            100% { transform: translateX(120%); }
+        }
+
+        @keyframes wrongMark {
+            0% { opacity: 0; transform: translateY(-50%) rotate(-90deg) scale(0.3); }
+            70% { opacity: 1; transform: translateY(-50%) rotate(12deg) scale(1.25); }
+            100% { opacity: 1; transform: translateY(-50%) rotate(0) scale(1); }
+        }
+
+        @keyframes verifiedMark {
+            0% { opacity: 0; transform: translateY(-50%) scale(0) rotate(-45deg); }
+            70% { opacity: 1; transform: translateY(-50%) scale(1.35) rotate(8deg); }
+            100% { opacity: 1; transform: translateY(-50%) scale(1) rotate(0); }
+        }
+
+        @keyframes wrongFrame {
+            0%, 100% { box-shadow: 0 0 12px rgba(255, 51, 51, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(255, 51, 51, 0.42), inset 0 0 22px rgba(255, 51, 51, 0.08); }
+        }
+
+        @keyframes wrongInput {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        @keyframes verifiedInput {
+            0% { filter: brightness(1); }
+            45% { filter: brightness(1.7); }
+            100% { filter: brightness(1); }
+        }
+
+        @keyframes verifiedEmblem {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.95)) drop-shadow(0 0 18px rgba(0, 255, 65, 0.62)); }
+            50% { filter: drop-shadow(0 0 12px #00ff41) drop-shadow(0 0 32px rgba(0, 255, 65, 0.95)); }
+        }
+
+        @keyframes verifiedEntry {
+            0% { opacity: 0; transform: translateY(12px) scale(0.92); filter: blur(5px); }
+            70% { transform: translateY(-2px) scale(1.03); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        @keyframes verifiedPulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(0, 255, 65, 0.12); }
+            50% { box-shadow: 0 0 24px rgba(0, 255, 65, 0.5); }
+        }
+
+        @keyframes verifiedFrame {
+            0%, 100% { box-shadow: 0 0 40px rgba(0, 255, 65, 0.08), 0 20px 80px rgba(0, 0, 0, 0.6); }
+            35%, 72% { box-shadow: 0 0 42px rgba(0, 255, 65, 0.48), 0 0 90px rgba(0, 255, 65, 0.2); }
+        }
+
+        @keyframes panelGlitch {
+            0%, 18%, 20%, 22%, 48%, 50%, 52%, 78%, 80%, 82%, 100% {
+                transform: translateY(0);
+                filter: none;
+                box-shadow: 0 0 40px rgba(0, 255, 65, 0.08), 0 20px 80px rgba(0, 0, 0, 0.6);
+            }
+            19%, 81% {
+                transform: translate(2px, -2px);
+                filter: hue-rotate(8deg);
+                box-shadow: -3px 0 rgba(0, 255, 65, 0.35), 0 0 42px rgba(0, 255, 65, 0.2);
+            }
+            21%, 49%, 51%, 79% {
+                transform: translate(-2px, 1px);
+                filter: hue-rotate(-8deg);
+                box-shadow: 3px 0 rgba(0, 180, 70, 0.3), 0 0 42px rgba(0, 255, 65, 0.18);
+            }
+            30%, 70% { transform: translateY(-2px); }
+        }
+
+        @keyframes loginGlitchTop {
+            0%, 58%, 64%, 100% { opacity: 0; transform: translate(0); }
+            59% { opacity: 0.9; transform: translate(-3px, 1px); }
+            60% { opacity: 0.75; transform: translate(3px, -1px); }
+            62% { opacity: 1; transform: translate(-1px, 0); }
+            63% { opacity: 0; }
+        }
+
+        @keyframes loginGlitchBottom {
+            0%, 74%, 80%, 100% { opacity: 0; transform: translate(0); }
+            75% { opacity: 0.85; transform: translate(3px, 1px); }
+            76% { opacity: 1; transform: translate(-3px, -1px); }
+            78% { opacity: 0.7; transform: translate(1px, 0); }
+            79% { opacity: 0; }
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { box-shadow: 0 0 0 rgba(0, 255, 65, 0); }
+            50% { box-shadow: 0 0 18px rgba(0, 255, 65, 0.24); }
+        }
+
+        @keyframes loginScan {
+            0%, 12% { top: -35%; opacity: 0; }
+            18% { opacity: 1; }
+            82% { opacity: 0.9; }
+            100% { top: 115%; opacity: 0; }
+        }
+
+        @keyframes bootSignal {
+            0%, 100% { border-left-color: #003311; filter: drop-shadow(0 0 0 transparent); }
+            50% { border-left-color: #00ff41; filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.45)); }
+        }
+
+        @keyframes subSignal {
+            0%, 100% { opacity: 0.72; letter-spacing: 2px; }
+            50% { opacity: 1; letter-spacing: 2.5px; }
+        }
+
+        @keyframes welcomeContent {
+            from { opacity: 0; transform: translateY(24px) scale(0.94); filter: blur(7px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        @keyframes welcomeExit {
+            to { opacity: 0; transform: translateY(-20px) scale(1.04); filter: blur(5px); }
+        }
+
+        @keyframes welcomeGlow {
+            from { filter: brightness(0.82); }
+            to { filter: brightness(1.28); }
+        }
+
+        @keyframes welcomeJitter {
+            0%, 91%, 93%, 96%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 1px); }
+            94% { transform: translate(2px, -1px); }
+            95% { transform: translate(-1px, -1px); }
+        }
+
+        @keyframes glitchTop {
+            0%, 88%, 100% { transform: translate(0); }
+            90% { transform: translate(5px, -2px); }
+            92% { transform: translate(-4px, 1px); }
+            94% { transform: translate(2px, 0); }
+        }
+
+        @keyframes glitchBottom {
+            0%, 84%, 100% { transform: translate(0); }
+            86% { transform: translate(-4px, 2px); }
+            89% { transform: translate(4px, -1px); }
+            92% { transform: translate(-2px, 0); }
+        }
+
+        @keyframes welcomeRing {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
+            25% { opacity: 0.85; }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.55); }
+        }
+
+        @keyframes ruleExpand {
+            from { opacity: 0; transform: scaleX(0); }
+            to { opacity: 1; transform: scaleX(1); }
+        }
+
+        @keyframes captionBlink {
+            0%, 100% { opacity: 0.55; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .login-container { padding: 14px; }
+            .login-box { padding: 32px 24px; }
+            .login-logo { font-size: 23px; }
+            .welcome-kicker { font-size: 10px; letter-spacing: 0.28em; }
+            .welcome-caption { font-size: 10px; letter-spacing: 0.18em; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <section class="welcome-screen" id="welcomeScreen" aria-label="Welcome to CDR" aria-live="polite">
+        <div class="welcome-content">
+            <div class="welcome-kicker">// SHADOW CDR ACCESS TERMINAL //</div>
+            <h1 class="welcome-title" data-text="WELCOME TO CDR" aria-label="WELCOME TO CDR">WELCOME TO CDR</h1>
+            <div class="welcome-rule"></div>
+            <p class="welcome-caption">DEVELOPED BY ARJUN </p>
+        </div>
+        <button class="welcome-skip" id="skipWelcome" type="button">SKIP INTRO</button>
+    </section>
+
+    <main class="login-container" id="loginContainer" aria-hidden="true">
+        <div class="login-box">
+            <div class="login-scan-beam" aria-hidden="true"></div>
+            <div class="login-ambience" aria-hidden="true">
+                <i style="--particle-x: 8%; --particle-delay: 0s; --particle-duration: 6.8s; --particle-drift: 12px;"></i>
+                <i style="--particle-x: 21%; --particle-delay: 2.1s; --particle-duration: 7.4s; --particle-size: 2px; --particle-drift: -16px;"></i>
+                <i style="--particle-x: 36%; --particle-delay: 4.2s; --particle-duration: 6.2s; --particle-drift: 22px;"></i>
+                <i style="--particle-x: 52%; --particle-delay: 1.3s; --particle-duration: 7.8s; --particle-size: 2px; --particle-drift: -12px;"></i>
+                <i style="--particle-x: 67%; --particle-delay: 3.6s; --particle-duration: 6.6s; --particle-drift: 16px;"></i>
+                <i style="--particle-x: 83%; --particle-delay: 0.8s; --particle-duration: 7.1s; --particle-size: 2px; --particle-drift: -20px;"></i>
+                <i style="--particle-x: 94%; --particle-delay: 5s; --particle-duration: 6.4s; --particle-drift: 10px;"></i>
+            </div>
+            <div class="login-corners" aria-hidden="true"></div>
+            <div class="login-header">
+                <div class="login-emblem-wrap">
+                    <svg class="login-emblem" viewBox="0 0 100 100" role="img" aria-label="Neon green cyber skull emblem">
+                        <defs>
+                            <clipPath id="emblemShieldClip">
+                                <path d="M50 5 87 21v28c0 23-15 38-37 47C28 87 13 72 13 49V21L50 5Z"/>
+                            </clipPath>
+                        </defs>
+                        <path class="emblem-fill" d="M50 5 87 21v28c0 23-15 38-37 47C28 87 13 72 13 49V21L50 5Z"/>
+                        <path class="emblem-detail" d="M50 5 87 21v28c0 23-15 38-37 47C28 87 13 72 13 49V21L50 5Z"/>
+                        <circle class="emblem-inner-ring" cx="50" cy="50" r="31"/>
+                        <path class="emblem-detail" d="M7 31h12M81 31h12M10 39h9M81 39h9M50 10v9"/>
+                        <path class="emblem-cutout" d="M31 42 39 34h22l8 8-3 19-7 8H41l-7-8-3-19Zm8 3-4 5 2 7h10v-9l-3-3h-5Zm22 0h-5l-3 3v9h10l2-7-4-5ZM43 71h14v5H43z"/>
+                        <path class="emblem-detail" d="M44 79h12M50 85v5M23 25l7 3M77 25l-7 3"/>
+                        <rect class="emblem-scan" x="18" y="18" width="64" height="2" clip-path="url(#emblemShieldClip)"/>
+                    </svg>
+                    <span class="emblem-orbit" aria-hidden="true"></span>
+                    <span class="emblem-orbit emblem-orbit-secondary" aria-hidden="true"></span>
+                </div>
+                <div class="login-logo" data-text="SHADOW CDR">SHADOW CDR</div>
+                <div class="login-sub">// SECURE ACCESS TERMINAL</div>
+            </div>
+
+            <div class="boot-text">
+                <div class="terminal-line">> Initializing secure connection...</div>
+                <div class="terminal-line">> Encryption protocol: AES-256</div>
+                <div class="terminal-line">> Awaiting authentication...</div>
+
+            </div>
+
+            <div class="error-msg" id="errorMsg" role="status" aria-live="assertive">
+                ACCESS DENIED — Invalid credentials
+            </div>
+
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label>USERNAME</label>
+                    <input type="text" id="username" placeholder="Enter username" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label>PASSWORD</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="login-btn">ACCESS SYSTEM</button>
+            </form>
+
+            <div class="login-footer">
+                DEVELOPED BY ARJUN<br>
+                Cyber Security Project
+            </div>
+        </div>
+        </main>
+
+    <script>
+        const DEFAULT_USERS = [
+            { username: 'arjun', password: '1234', fullName: 'Arjun Singh', role: 'admin' }
+        ];
+        const MAX_ATTEMPTS = 10;
+        const LOCK_MS = 2 * 60 * 1000; // 2 minutes
+        const SESSION_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+        let loginPending = false;
+        let loginFeedbackTimer = null;
+
+        function showLoginFeedback(message, state) {
+            const feedback = document.getElementById('errorMsg');
+            const loginBox = document.querySelector('.login-box');
+            if (!feedback || !loginBox) return;
+
+            feedback.classList.remove('show', 'wrong', 'verified');
+            loginBox.classList.remove('is-wrong', 'is-verified');
+            feedback.textContent = message;
+            void feedback.offsetWidth;
+            feedback.classList.add('show', state);
+            loginBox.classList.add(state === 'verified' ? 'is-verified' : 'is-wrong');
+        }
+
+        function getUsers() {
+            const stored = localStorage.getItem('cdr_users');
+            if (stored) {
+                try { return JSON.parse(stored); } catch (e) { return DEFAULT_USERS.slice(); }
+            }
+            localStorage.setItem('cdr_users', JSON.stringify(DEFAULT_USERS));
+            return DEFAULT_USERS.slice();
+        }
+
+        function isLocked() {
+            const lockUntil = parseInt(localStorage.getItem('cdr_lock_until') || '0', 10);
+            return Date.now() < lockUntil;
+        }
+
+        function recordFail() {
+            let fails = parseInt(localStorage.getItem('cdr_fail_count') || '0', 10) + 1;
+            localStorage.setItem('cdr_fail_count', String(fails));
+            if (fails >= MAX_ATTEMPTS) {
+                localStorage.setItem('cdr_lock_until', String(Date.now() + LOCK_MS));
+                localStorage.setItem('cdr_fail_count', '0');
+            }
+            return fails;
+        }
+
+        function clearFails() {
+            localStorage.removeItem('cdr_fail_count');
+            localStorage.removeItem('cdr_lock_until');
+        }
+
+        function sessionValid() {
+            if (localStorage.getItem('cdr_logged_in') !== 'true') return false;
+            const exp = parseInt(localStorage.getItem('cdr_session_exp') || '0', 10);
+            return Date.now() < exp;
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            if (loginPending) return false;
+            const errorMsg = document.getElementById('errorMsg');
+            const loginBox = document.querySelector('.login-box');
+            errorMsg.classList.remove('show', 'wrong', 'verified');
+            if (loginBox) loginBox.classList.remove('is-wrong', 'is-verified');
+            const username = document.getElementById('username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const password = document.getElementById('password').value;
+
+            if (isLocked()) {
+                const left = Math.ceil((parseInt(localStorage.getItem('cdr_lock_until'), 10) - Date.now()) / 1000);
+                showLoginFeedback('TOO MANY ATTEMPTS — LOCKED FOR ' + left + 's', 'wrong');
+                return false;
+            }
+
+            if (!username || !password) {
+                showLoginFeedback('USERNAME AND PASSWORD REQUIRED', 'wrong');
+                return false;
+            }
+
+            const users = getUsers();
+            const user = users.find(function(u) {
+                return u.username === username && u.password === password;
+            });
+
+            if (user) {
+                const role = ['admin', 'owner', 'user'].includes(user.role) ? user.role : 'user';
+                clearFails();
+                localStorage.setItem('cdr_logged_in', 'true');
+                localStorage.setItem('cdr_user', user.fullName);
+                localStorage.setItem('cdr_username', user.username);
+                localStorage.setItem('cdr_role', role);
+                localStorage.setItem('cdr_session_exp', String(Date.now() + SESSION_MS));
+                loginPending = true;
+                if (loginFeedbackTimer) window.clearTimeout(loginFeedbackTimer);
+                document.getElementById('username').disabled = true;
+                document.getElementById('password').disabled = true;
+                const submitButton = document.querySelector('.login-btn');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'VERIFIED';
+                }
+                showLoginFeedback('✓ VERIFIED — ACCESS GRANTED', 'verified');
+                loginFeedbackTimer = window.setTimeout(function() {
+                    window.location.href = 'index.html';
+                }, 1300);
+            } else {
+                const fails = recordFail();
+                const left = MAX_ATTEMPTS - fails;
+                const message = left > 0
+                    ? '✖ WRONG — INVALID ID OR PASSWORD (' + left + ' TRIES LEFT)'
+                    : '✖ WRONG — TOO MANY ATTEMPTS. LOCKED FOR 2 MINUTES';
+                showLoginFeedback(message, 'wrong');
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+                if (loginFeedbackTimer) window.clearTimeout(loginFeedbackTimer);
+                loginFeedbackTimer = window.setTimeout(function() {
+                    errorMsg.classList.remove('show', 'wrong');
+                    if (loginBox) loginBox.classList.remove('is-wrong');
+                }, 4000);
+            }
+            return false;
+        }
+
+        function finishWelcomeIntro() {
+            if (introTimer) window.clearTimeout(introTimer);
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const loginContainer = document.getElementById('loginContainer');
+            if (welcomeScreen) {
+                welcomeScreen.classList.add('is-leaving');
+                welcomeScreen.setAttribute('aria-hidden', 'true');
+            }
+            document.body.classList.add('intro-complete');
+            if (loginContainer) {
+                loginContainer.classList.add('is-revealed');
+                loginContainer.setAttribute('aria-hidden', 'false');
+            }
+        }
+
+        let introTimer = null;
+        const hasValidSession = sessionValid();
+
+        if (hasValidSession) {
+            window.location.href = 'index.html';
+        } else {
+            localStorage.removeItem('cdr_logged_in');
+            localStorage.removeItem('cdr_session_exp');
+            document.getElementById('skipWelcome').addEventListener('click', finishWelcomeIntro);
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !document.body.classList.contains('intro-complete')) {
+                    finishWelcomeIntro();
+                }
+            });
+            const welcomeDuration = 3000;
+            introTimer = window.setTimeout(finishWelcomeIntro, welcomeDuration);
+        }
+    </script>
+</body>
+</html>

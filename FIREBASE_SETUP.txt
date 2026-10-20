@@ -1,0 +1,70 @@
+===============================================
+   FIREBASE SETUP GUIDE
+   Shadow CDR Project - Arjun Singh
+===============================================
+
+STEP 1: Firebase Account Banao
+------------------------------
+1. Browser mein jao: https://console.firebase.google.com
+2. Google account se login karo
+3. "Create a project" / "Add project" pe click karo
+4. Project name rakho: ShadowCDR (ya kuch bhi)
+5. Google Analytics skip kar sakte ho (optional)
+6. Project create ho jayega
+
+
+STEP 2: Firestore Database On Karo
+----------------------------------
+1. Left side menu se "Build" → "Firestore Database" pe click karo
+2. "Create database" pe click karo
+3. "Start in test mode" select karo (important)
+4. Location: asia-south1 (Mumbai) choose karo
+5. Enable pe click karo
+
+
+STEP 3: Web App Register Karo
+-----------------------------
+1. Project Overview pe jao (gear icon ke paas)
+2. "</>" (Web) icon pe click karo
+3. App nickname: ShadowCDR
+4. "Also set up Firebase Hosting" KO CHECK MAT KARNA
+5. Register app pe click karo
+6. Jo config dikhega, usko copy kar lena
+
+
+STEP 4: Config Mujhe Do / Code Mein Daalo
+-----------------------------------------
+Firebase aapko aisa kuch dega:
+
+const firebaseConfig = {
+  apiKey: "AIza....",
+  authDomain: "shadowcdr-xxxx.firebaseapp.com",
+  projectId: "shadowcdr-xxxx",
+  storageBucket: "shadowcdr-xxxx.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};
+
+Is config ko script.js file mein daalna hoga.
+
+
+STEP 5: Firestore Rules (Temporary)
+-----------------------------------
+Firestore → Rules tab mein yeh rules daalo (test mode ke liye):
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+Publish pe click karo.
+
+
+===============================================
+Setup complete hone ke baad mujhe bata dena.
+Main aapko updated code de dunga.
+===============================================
